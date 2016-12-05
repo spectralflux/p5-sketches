@@ -1,31 +1,28 @@
 // globals
-var particles;
+var clouds;
 
 // constants
 var BACKGROUND_COLOR = [15, 5, 5];
-var INTERACT_DISTANCE = 60;
-var CANVAS_X = 1340;
-var CANVAS_Y = 300;
-var NUM_PARTICLES = 50;
-var V_MAX = 0.7;
+var CANVAS_X = 500;
+var CANVAS_Y = 500;
+
+var MIN_PARTICLES = 6;
+var MAX_PARTICLES = 10;
+var MAX_PARTICLE_V = 0.8;
+var MIN_CLOUD_V = 0.5;
+var MAX_CLOUD_V = 1;
+var MIN_INIT_PARTICLE_DIST_FROM_COM = 20;
+var MAX_INIT_PARTICLE_DIST_FROM_COM = 20;
 
 /**
  * A particle object.
  */
 var Particle = function(position) {
-    this.velocity = createVector(random(-V_MAX,V_MAX), random(-V_MAX,V_MAX));
+    this.velocity = createVector(random(-MAX_PARTICLE_V,MAX_PARTICLE_V), random(-MAX_PARTICLE_V,MAX_PARTICLE_V));
     this.position = position.copy();
 }
 
 Particle.prototype.update = function(){
-    //console.log("x:", this.position.x, "y:", this.position.y)
-    if ((this.position.x <= 0) || (this.position.x >= CANVAS_X)) {
-        this.velocity.set(-this.velocity.x, this.velocity.y);
-    }
-    
-    if ((this.position.y <= 0) || (this.position.y >= CANVAS_Y)) {
-        this.velocity.set(this.velocity.x, -this.velocity.y);
-    }
     this.position.add(this.velocity);
 };
 
@@ -34,6 +31,29 @@ Particle.prototype.display = function() {
     strokeWeight(1);
     fill(80, 100);
     ellipse(this.position.x, this.position.y, 3, 3);
+};
+
+/**
+ * A cloud of particles.
+ */
+var Cloud = function(position) {
+    var numParticles = random(MIN_PARTICLES, MAX_PARTICLES);
+    this.velocity = createVector(random(MIN_CLOUD_V, MAX_CLOUD_V), 0);
+    this.position = position.copy;
+    this.particles = [];
+    
+    for(var i = 0; i < numParticles; i++) {
+        var extentX = random(MIN_INIT_PARTICLE_DIST_FROM_COM, MAX_INIT_PARTICLE_DIST_FROM_COM);
+        var extentY = random(MIN_INIT_PARTICLE_DIST_FROM_COM, MAX_INIT_PARTICLE_DIST_FROM_COM);
+        this.particles.push(new Particle(createVector(random(this.position.x-extentX,this.position.x+extentX),random(this.position.x-extentY,this.position.x+extentY))));
+    }
+}
+
+Cloud.prototype.update = function(){
+    this.position.add(this.velocity);
+    for(var i = 0; i < this.particles.length; i++) {
+        this.particles[i].update();
+    }
 };
 
 
@@ -45,36 +65,18 @@ function drawBackground() {
 function setup() {
     createCanvas(CANVAS_X, CANVAS_Y);
     drawBackground();
-    particles = [];
+    clouds = []
+    
+    clouds.push(new Cloud(createVector(250, 250)));
+/*    particles = [];
     for(var i = 1; i < NUM_PARTICLES; i++) {
         particles.push(new Particle(createVector(random(0,CANVAS_X),random(0,CANVAS_Y))))
-    }
+    }*/
 }
 
 function draw() {
     drawBackground();
-    for(var i = 0; i < particles.length; i++) {
-        particles[i].update();
-        particles[i].display();
-        
-        // pretty triangles renderer
-        for(var j = 0; j < particles.length; j++) {
-            if (i != j) {
-                var dist12 = particles[i].position.dist(particles[j].position);
-                if (dist12 <= INTERACT_DISTANCE) {
-                    for(var k = 0; k < particles.length; k++) {
-                        if (i != k && j != k) {
-                            var dist23 = particles[j].position.dist(particles[k].position);
-                            if (dist23 <= INTERACT_DISTANCE) {
-                                //noFill();
-                                strokeWeight(1);
-                                stroke(255,20);
-                                triangle(particles[i].position.x, particles[i].position.y, particles[j].position.x, particles[j].position.y, particles[k].position.x, particles[k].position.y)
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    for (var i = 0; i < clouds.length; i++) {
+        clouds[i].update();
     }
 }
