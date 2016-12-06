@@ -28,10 +28,11 @@ Particle.prototype.update = function(){
 
 Particle.prototype.display = function() {
     stroke(200, 100);
-    strokeWeight(1);
+    strokeWeight(5);
     fill(80, 100);
-    ellipse(this.position.x, this.position.y, 3, 3);
+    ellipse(this.position.x, this.position.y, 30, 30);
 };
+
 
 /**
  * A cloud of particles.
@@ -39,7 +40,7 @@ Particle.prototype.display = function() {
 var Cloud = function(position) {
     var numParticles = random(MIN_PARTICLES, MAX_PARTICLES);
     this.velocity = createVector(random(MIN_CLOUD_V, MAX_CLOUD_V), 0);
-    this.position = position.copy;
+    this.position = position.copy();
     this.particles = [];
     
     for(var i = 0; i < numParticles; i++) {
@@ -56,6 +57,12 @@ Cloud.prototype.update = function(){
     }
 };
 
+Cloud.prototype.display = function() {
+     for(var i = 0; i < this.particles.length; i++) {
+         this.particles[i].display();
+     }
+};
+
 
 
 function drawBackground() {
@@ -67,16 +74,14 @@ function setup() {
     drawBackground();
     clouds = []
     
-    clouds.push(new Cloud(createVector(250, 250)));
-/*    particles = [];
-    for(var i = 1; i < NUM_PARTICLES; i++) {
-        particles.push(new Particle(createVector(random(0,CANVAS_X),random(0,CANVAS_Y))))
-    }*/
+    var cloudPos = createVector(250,250);
+    clouds.push(new Cloud(cloudPos));
 }
 
 function draw() {
     drawBackground();
     for (var i = 0; i < clouds.length; i++) {
         clouds[i].update();
+        clouds[i].display();
     }
 }
