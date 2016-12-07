@@ -8,9 +8,9 @@ var CANVAS_Y = 500;
 var NUM_CLOUDS = 5;
 var MIN_PARTICLES = 4;
 var MAX_PARTICLES = 8;
-var MAX_PARTICLE_V = 0.8;
-var MIN_CLOUD_V = 0.8;
-var MAX_CLOUD_V = 1;
+var MAX_PARTICLE_V = 0.2;
+var MIN_CLOUD_V = 0.1;
+var MAX_CLOUD_V = 0.2;
 var MIN_INIT_PARTICLE_DIST_FROM_COM = 10;
 var MAX_INIT_PARTICLE_DIST_FROM_COM = 30;
 var CLOUD_GRAV_EDGE = 30;
@@ -20,20 +20,43 @@ var INTERACT_DISTANCE = 60;
  * A particle object.
  */
 var Particle = function (position) {
+    this.acceleration = 0;
     this.velocity = createVector(random(-MAX_PARTICLE_V, MAX_PARTICLE_V), random(-MAX_PARTICLE_V, MAX_PARTICLE_V));
     this.position = position.copy();
 }
 
 Particle.prototype.update = function (cloudPos) {
+    var k = 0.01;
+    this.acceleration = k*(1/(this.position.dist(cloudPos))^2);
+    
+    if (this.position.x > cloudPos.x) {
+        this.acceleration.x = -this.acceleration.x;
+    }
+    
+    if (this.position.y > cloudPos.y) {
+        this.acceleration.y = -this.acceleration.y;
+    }
+    
+    this.velocity.add(this.acceleration);
+    
+    
+/*    if (this.position.x > cloudPos.x) {
+        this.velocity.set(-this.velocity.x, this.velocity.y);
+    }
+    if (this.position.y > cloudPos.y) {
+        this.velocity.set(this.velocity.x, -this.velocity.y);
+    }*/
+    
     /* var newVx = 0.01*(this.position.x-cloudPos.x)^2 + MAX_PARTICLE_V;
      var newVy = 0.01*(this.position.y-cloudPos.y)^2 + MAX_PARTICLE_V;
      this.velocity.set(newVx, newVy);*/
-    if ((this.position.x <= cloudPos.x - CLOUD_GRAV_EDGE) || (this.position.x >= cloudPos.x + CLOUD_GRAV_EDGE)) {
+/*    if ((this.position.x <= cloudPos.x - CLOUD_GRAV_EDGE) || (this.position.x >= cloudPos.x + CLOUD_GRAV_EDGE)) {
         this.velocity.set(-this.velocity.x, this.velocity.y);
     }
     if ((this.position.y <= cloudPos.y - CLOUD_GRAV_EDGE) || (this.position.y >= cloudPos.y + CLOUD_GRAV_EDGE)) {
         this.velocity.set(this.velocity.x, -this.velocity.y);
-    }
+    }*/
+    
     this.position.add(this.velocity);
 };
 
